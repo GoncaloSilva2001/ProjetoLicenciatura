@@ -84,12 +84,12 @@ for post in csv_contents:
 
 
 
-with open ('words.txt') as txtfile:
-    vocabulario=txtfile.readlines()
-    for palavra in vocabulario:
-        palavra=palavra.replace("\n","").replace("'","")
-        palavra=palavra.lower()
-        vocab.append(palavra)
+#with open ('words.txt') as txtfile:
+ #   vocabulario=txtfile.readlines()
+  #  for palavra in vocabulario:
+   #     palavra=palavra.replace("\n","").replace("'","")
+    #    palavra=palavra.lower()
+     #   vocab.append(palavra)
 
 with open ("palavrasadicionar.txt","w", encoding="utf-8") as file:
     for word in words:
