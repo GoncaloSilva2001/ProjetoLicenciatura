@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import emoji
 import json
+import csv
 from openpyxl import Workbook
 
 def fetch_emojis(url):
@@ -28,12 +29,14 @@ if __name__ == "__main__":
     emojis = fetch_emojis(url)
 
     data_for_xlsx = [['Emoji', 'Unicode', 'Description']]
+    data_for_csv = [['Emoji', 'Unicode', 'Description']]
+
 
     for emoji_char in emojis:
         unicode_points = get_unicode_code_points(emoji_char)
         shortcode = get_emoji_description(emoji_char)
         data_for_xlsx.append([emoji_char, unicode_points, shortcode])
-
+        data_for_csv.append([emoji_char, unicode_points, shortcode])
     # Create a new Excel workbook
     wb = Workbook()
     ws = wb.active
@@ -49,3 +52,8 @@ if __name__ == "__main__":
     # Save data to JSON
     with open('emojis.json', 'w', encoding='utf-8') as jsonfile:
         json.dump(data_for_xlsx[1:], jsonfile, indent=4)
+
+    # Save data to CSV
+    with open('emojis.csv', 'w', newline='', encoding='utf-8') as csvfile:
+        csv_writer = csv.writer(csvfile)
+        csv_writer.writerows(data_for_csv)
