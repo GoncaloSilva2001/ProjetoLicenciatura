@@ -1,11 +1,10 @@
 import csv
 import emoji
-import json
 import requests
 from bs4 import BeautifulSoup
 from openpyxl import load_workbook
 from openpyxl.workbook import Workbook
-
+from nltk.sentiment import SentimentIntensityAnalyzer
 
 # Função para buscar emojis do site
 def fetch_emojis(url):
@@ -26,7 +25,14 @@ def get_unicode_code_points(string):
 # Função para obter a descrição de um emoji
 def get_emoji_description(emoji_char):
     shortcode = emoji.demojize(emoji_char)
-    return shortcode
+    description = shortcode.strip(':').replace('_', ' ')
+    return description
+
+# Função para calcular o score de análise de sentimentos usando NLTK
+def calcular_score(descricao):
+    analyzer = SentimentIntensityAnalyzer()
+    scores = analyzer.polarity_scores(descricao)
+    return scores['compound']
 
 # Função para ler slang do arquivo e adicionar ao xlsx
 def add_slangs_to_xlsx(filename, worksheet_name, slang_file):
@@ -40,19 +46,21 @@ def add_slangs_to_xlsx(filename, worksheet_name, slang_file):
                 slang = row[1].strip()  # Remove leading and trailing whitespace
                 if slang.endswith(','):  # Check if slang ends with a comma
                     slang = slang[:-1]  # Remove the trailing comma
-                ws.append([row[0].strip(), '', slang])
+                score = calcular_score(slang)  # Calcular o score de análise de sentimentos
+                ws.append([row[0].strip(), '', slang, score])
 
     wb.save(filename)
 
 if __name__ == "__main__":
     url = "https://getemoji.com/"
     emojis = fetch_emojis(url)
-    data_for_xlsx = [['Design', 'Unicode', 'Description']]
+    data_for_xlsx = [['Design', 'Unicode', 'Description', 'Score']]
 
     for emoji_char in emojis:
         unicode_points = get_unicode_code_points(emoji_char)
-        shortcode = get_emoji_description(emoji_char)
-        data_for_xlsx.append([emoji_char, unicode_points, shortcode])
+        description = get_emoji_description(emoji_char)
+        score = calcular_score(description)  # Calcular o score de análise de sentimentos
+        data_for_xlsx.append([emoji_char, unicode_points, description, score])
 
     # Create a new Excel workbook
     wb = Workbook()
@@ -64,9 +72,9 @@ if __name__ == "__main__":
         ws.append(row)
 
     # Save workbook to XLSX file
-    wb.save("emojis.xlsx")
+    wb.save("emojis_with_sentiment_score.xlsx")
 
     # Add slang terms to the xlsx
-    add_slangs_to_xlsx("emojis.xlsx", "Emojis", "slang.txt")
+    add_slangs_to_xlsx("emojis_with_sentiment_score.xlsx", "Emojis", "slang.txt")
 
     print("Os ficheiros CSV e XLSX foram preenchidos com sucesso!")
